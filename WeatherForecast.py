@@ -2,14 +2,22 @@ import requests
 import sys
 from datetime import datetime
 
-appid = "54136453698981eea1430cbee65e00a3"
-smiles = {"небольшая облачность": "🌤", "переменная облачность": "⛅", "небольшой снег": "❄", "пасмурно": "☁"}
-directions = {"Ю": "Юг", "ЮЗ": "Юго-Запад", "ЮВ": "Юго-Восток",
-              "С": "Север", "СЗ": "Северо-Запад", "СВ": "Северо-Восток",
-              " З": "Запад", "В": "Восток"}
+appid = "4aa4913f55ee689b48f7dddbfaf57b43"
+smiles = {"пасмурно": "☁",
+          "небольшая облачность": "🌤",
+          "переменная облачность": "⛅",
+          "облачно с прояснениями": "⛅",
+          "небольшой дождь": "🌧",#        "дождь": "🌧",
+          "небольшой снег": "❄",
+          "снег": "❄",
+          "ясно": "☀"}
+directions = {"Ю ": "Юг", "ЮЗ": "Юго-Запад", "ЮВ": "Юго-Восток",
+              "С ": "Север", "СЗ": "Северо-Запад", "СВ": "Северо-Восток",
+              " З": "Запад", " В": "Восток"}
 
 
 def get_wind_direction(deg):
+    global res
     direction = ['С ', 'СВ', ' В', 'ЮВ', 'Ю ', 'ЮЗ', ' З', 'СЗ']
     for i in range(0, 8):
         step = 45.
@@ -56,6 +64,48 @@ def request_forecast_today(id):
         pass
 
 
+def request_forecast_tomorrow(id):
+    try:
+        res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
+                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+        data = res.json()
+        forecast = ""
+        for i in data['list']:
+            if int(i['dt_txt'][8:-9]) == datetime.now().day:
+                continue
+            if int(i['dt_txt'][8:-9]) == datetime.now().day + 1:
+                forecast += "{} {}{} {}{}".format(i['dt_txt'][11:16],
+                                                  smiles[i['weather'][0]['description']],
+                                                  '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
+                                                  directions[get_wind_direction(i['wind']['deg'])],
+                                                  '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
+            else:
+                break
+        return forecast
+    except Exception as e:
+        print("Exception (forecast):", e)
+        pass
+
+
+def request_forecast_five(id):
+    try:
+        res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
+                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+        data = res.json()
+        forecast = ""
+        for i in data['list']:
+            if i['dt_txt'][11:] == "15:00:00":
+                forecast += "{}/{} {}{} {}{}".format(i['dt_txt'][8:10], i['dt_txt'][5:7],
+                                                     smiles[i['weather'][0]['description']],
+                                                     '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
+                                                     directions[get_wind_direction(i['wind']['deg'])],
+                                                     '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
+        return forecast
+    except Exception as e:
+        print("Exception (forecast):", e)
+        pass
+
+
 if len(sys.argv) == 2:
     s_city_name = sys.argv[1]
     print("city:", s_city_name)
@@ -63,3 +113,5 @@ if len(sys.argv) == 2:
 elif len(sys.argv) > 2:
     print('Enter name of city as one argument. For example: Petersburg,RU')
     sys.exit()
+
+print(request_forecast_five(get_city_id("Kiev")))

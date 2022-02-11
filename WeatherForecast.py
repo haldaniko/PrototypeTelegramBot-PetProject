@@ -63,26 +63,6 @@ def request_forecast_today(id):
         print("Exception (forecast):", e)
         pass
 
-def request_forecast_tomorrow(id):
-    try:
-        res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
-                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
-        data = res.json()
-        forecast = ""
-        for i in data['list']:
-            if int(i['dt_txt'][8:-9]) != datetime.now().day+1:
-                break
-            forecast += "{} {}{} {}{}".format(i['dt_txt'][11:16],
-                                              smiles[i['weather'][0]['description']],
-                                              '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
-                                              directions[get_wind_direction(i['wind']['deg'])],
-                                              '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
-            if isinstance(forecast, NoneType):
-                raise Exception('Не могу получить данные на завтра')
-        return forecast
-    except Exception as e:
-        print("Exception (forecast):", e)
-        pass
 
 def request_forecast_tomorrow(id):
     try:
@@ -134,4 +114,4 @@ elif len(sys.argv) > 2:
     print('Enter name of city as one argument. For example: Petersburg,RU')
     sys.exit()
 
-print(request_forecast_five(get_city_id("Kiev")))
+#print(request_forecast_five(get_city_id("Kiev")))

@@ -34,7 +34,7 @@ def get_random_joke():
 
 def get_random_quote():
     try:
-        res = requests.get("https://api.fisenko.net/v1/quotes/ru/random")
+        res = requests.get("https://api.fisenko.net/v1/quotes/en/random")
         data = res.json()
         quote = "{}\n© {}".format(data['text'], data['author']['name'])
         return quote

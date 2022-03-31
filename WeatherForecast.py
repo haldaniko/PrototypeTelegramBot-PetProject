@@ -3,22 +3,24 @@ import sys
 from datetime import datetime
 
 appid = "4aa4913f55ee689b48f7dddbfaf57b43"
-smiles = {"пасмурно": "☁",
-          "небольшая облачность": "🌤",
-          "переменная облачность": "⛅",
+smiles = {"overcast clouds": "☁",
+          "broken clouds": "🌤",
+          "scattered clouds": "⛅",
           "облачно с прояснениями": "⛅",
-          "небольшой дождь": "🌧",#        "дождь": "🌧",
-          "небольшой снег": "❄",
-          "снег": "❄",
+          "light rain": "🌧",
+          "moderate rain": "🌧",
+          "rain": "🌧",
+          "light snow": "❄",
+          "snow": "❄",
           "ясно": "☀"}
-directions = {"Ю ": "Юг", "ЮЗ": "Юго-Запад", "ЮВ": "Юго-Восток",
-              "С ": "Север", "СЗ": "Северо-Запад", "СВ": "Северо-Восток",
-              " З": "Запад", " В": "Восток"}
+directions = {"S ": "South", "WS": "Southwest", "SE": "Southeast",
+              "N ": "North", "NW": "Northwest", "NE": "Northeast",
+              " W": "West", " E": "East"}
 
 
 def get_wind_direction(deg):
     global res
-    direction = ['С ', 'СВ', ' В', 'ЮВ', 'Ю ', 'ЮЗ', ' З', 'СЗ']
+    direction = ['N ', 'NE', ' E', 'SE', 'S ', 'WS', ' W', 'NW']
     for i in range(0, 8):
         step = 45.
         minimum = i * step - 45 / 2.
@@ -32,9 +34,10 @@ def get_wind_direction(deg):
 
 
 def get_city_id(city_name):
+    global city_identifier
     try:
         res = requests.get("http://api.openweathermap.org/data/2.5/find",
-                           params={'q': city_name, 'type': 'like', 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+                           params={'q': city_name, 'type': 'like', 'units': 'metric', 'lang': 'eng', 'APPID': appid})
         data = res.json()
         city_identifier = data['list'][0]['id']
     except Exception as e:
@@ -47,7 +50,7 @@ def get_city_id(city_name):
 def request_forecast_today(id):
     try:
         res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
-                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+                           params={'id': id, 'units': 'metric', 'lang': 'eng', 'APPID': appid})
         data = res.json()
         forecast = ""
         for i in data['list']:
@@ -57,7 +60,7 @@ def request_forecast_today(id):
                                               smiles[i['weather'][0]['description']],
                                               '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                               directions[get_wind_direction(i['wind']['deg'])],
-                                              '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
+                                              '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
         return forecast
     except Exception as e:
         print("Exception (forecast):", e)
@@ -67,18 +70,18 @@ def request_forecast_today(id):
 def request_forecast_tomorrow(id):
     try:
         res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
-                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+                           params={'id': id, 'units': 'metric', 'lang': 'eng', 'APPID': appid})
         data = res.json()
         forecast = ""
         for i in data['list']:
             if int(i['dt_txt'][8:-9]) == datetime.now().day:
                 continue
-            if int(i['dt_txt'][8:-9]) == datetime.now().day + 1:
+            if int(i['dt_txt'][8:-9]) == datetime.now().day + 1 or (int(i['dt_txt'][5:7]) != datetime.now().month and int(i['dt_txt'][8:-9]) == 1):
                 forecast += "{} {}{} {}{}".format(i['dt_txt'][11:16],
                                                   smiles[i['weather'][0]['description']],
                                                   '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                                   directions[get_wind_direction(i['wind']['deg'])],
-                                                  '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
+                                                  '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
             else:
                 break
         return forecast
@@ -90,7 +93,7 @@ def request_forecast_tomorrow(id):
 def request_forecast_five(id):
     try:
         res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
-                           params={'id': id, 'units': 'metric', 'lang': 'ru', 'APPID': appid})
+                           params={'id': id, 'units': 'metric', 'lang': 'eng', 'APPID': appid})
         data = res.json()
         forecast = ""
         for i in data['list']:
@@ -99,7 +102,7 @@ def request_forecast_five(id):
                                                      smiles[i['weather'][0]['description']],
                                                      '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                                      directions[get_wind_direction(i['wind']['deg'])],
-                                                     '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
+                                                     '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
         return forecast
     except Exception as e:
         print("Exception (forecast):", e)
@@ -111,7 +114,8 @@ if len(sys.argv) == 2:
     print("city:", s_city_name)
     city_id = get_city_id(s_city_name)
 elif len(sys.argv) > 2:
-    print('Enter name of city as one argument. For example: Petersburg,RU')
+    print('Enter name of city as one argument. For example: Kiev,UA')
     sys.exit()
 
-#print(request_forecast_five(get_city_id("Kiev")))
+
+print(request_forecast_tomorrow(get_city_id("Kiev")))

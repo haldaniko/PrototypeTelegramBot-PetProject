@@ -1,7 +1,7 @@
 import requests
 
 
-currencies_list = {"USD": "🇺🇸", "EUR": "🇪🇺", "RUB": "🇷🇺"}
+currencies_list = {"USD": "🇺🇸", "EUR": "🇪🇺", "PLN": "🇵🇱"}
 
 
 def get_rate_info():
@@ -16,6 +16,3 @@ def get_rate_info():
     except Exception as e:
         print("Exception (find):", e)
         pass
-
-
-get_rate_info()

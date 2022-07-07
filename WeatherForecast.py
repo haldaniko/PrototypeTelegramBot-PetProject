@@ -6,16 +6,16 @@ appid = "4aa4913f55ee689b48f7dddbfaf57b43"
 smiles = {"overcast clouds": "☁",
           "broken clouds": "🌤",
           "scattered clouds": "⛅",
-          "облачно с прояснениями": "⛅",
+          "few clouds": "⛅",
           "light rain": "🌧",
           "moderate rain": "🌧",
           "rain": "🌧",
           "light snow": "❄",
           "snow": "❄",
-          "ясно": "☀"}
-directions = {"S ": "South", "WS": "Southwest", "SE": "Southeast",
-              "N ": "North", "NW": "Northwest", "NE": "Northeast",
-              " W": "West", " E": "East"}
+          "clear sky": "☀"}
+directions = {"S ": "Юг", "WS": "Юго-Запад", "SE": "Юго-Восток",
+              "N ": "Север", "NW": "Северо-Запад", "NE": "Северо-Восток",
+              " W": "Запад", " E": "Восток"}
 
 
 def get_wind_direction(deg):
@@ -60,7 +60,7 @@ def request_forecast_today(id):
                                               smiles[i['weather'][0]['description']],
                                               '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                               directions[get_wind_direction(i['wind']['deg'])],
-                                              '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
+                                              '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
         return forecast
     except Exception as e:
         print("Exception (forecast):", e)
@@ -81,7 +81,7 @@ def request_forecast_tomorrow(id):
                                                   smiles[i['weather'][0]['description']],
                                                   '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                                   directions[get_wind_direction(i['wind']['deg'])],
-                                                  '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
+                                                  '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
             else:
                 break
         return forecast
@@ -102,7 +102,7 @@ def request_forecast_five(id):
                                                      smiles[i['weather'][0]['description']],
                                                      '{0:+3.0f}'.format(i['main']['temp']) + "°C,",
                                                      directions[get_wind_direction(i['wind']['deg'])],
-                                                     '{0:2.0f}'.format(i['wind']['speed']) + " m/s\n")
+                                                     '{0:2.0f}'.format(i['wind']['speed']) + " м/с\n")
         return forecast
     except Exception as e:
         print("Exception (forecast):", e)
@@ -116,6 +116,3 @@ if len(sys.argv) == 2:
 elif len(sys.argv) > 2:
     print('Enter name of city as one argument. For example: Kiev,UA')
     sys.exit()
-
-
-print(request_forecast_tomorrow(get_city_id("Kiev")))

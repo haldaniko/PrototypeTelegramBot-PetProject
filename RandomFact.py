@@ -32,9 +32,9 @@ def get_random_joke():
         pass
 
 
-def get_random_quote():
+def get_random_quote(language):
     try:
-        res = requests.get("https://api.fisenko.net/v1/quotes/en/random")
+        res = requests.get("https://api.fisenko.net/v1/quotes/{}/random".format(language))
         data = res.json()
         quote = "{}\n© {}".format(data['text'], data['author']['name'])
         return quote

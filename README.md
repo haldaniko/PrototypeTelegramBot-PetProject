@@ -1,7 +1,7 @@
 # Pet-project: Virtual Assistant Telegram Bot
 
 #### Technology stack:
-* Python (telebot)
+* Python 
 
 #### External data sources:
 * Weather Forecast: https://openweathermap.org/

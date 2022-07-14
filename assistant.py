@@ -28,9 +28,9 @@ def menu(message):
             keyboard = telebot.types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
             weatherButton = telebot.types.KeyboardButton(text="🌦 Погода")
             wikipediaButton = telebot.types.KeyboardButton(text="📖 Поиск в Вики")
+            translateButton = telebot.types.KeyboardButton(text="📝 Переводчик")
             returnButton = telebot.types.KeyboardButton(text="🔸 Назад")
-            keyboard.add(weatherButton, wikipediaButton, returnButton)
-
+            keyboard.add(weatherButton, wikipediaButton, translateButton, returnButton)
             bot.send_message(message.chat.id, text="🔸 Панель инструментов",
                              parse_mode="Markdown",
                              reply_markup=keyboard)
@@ -96,23 +96,23 @@ def tools_menu(message):
                              reply_markup=keyboard)
             bot.register_next_step_handler(message, wiki_menu)
 
+        elif message.text == "📝 Переводчик":
+
+            keyboard = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+            returnButton = telebot.types.KeyboardButton(text="🔸 Отмена")
+            keyboard.add(returnButton)
+
+            bot.send_message(message.from_user.id, "Что мне перевести?",
+                             parse_mode="Markdown",
+                             reply_markup=keyboard)
+
+            bot.register_next_step_handler(message, translate_menu_first)
         elif message.text == "🔸 Назад":
             start(message)
     except TypeError as e:
         print("Wild Type Error occured! It uses \033[93m", e)
         print('\033[0m')
         pass
-
-
-def wiki_menu(message):
-    if message.text != "🔸 Нет, это всё":
-        bot.send_message(message.from_user.id, "Вот что я нашла:\n\n{}".format(wiki_search(message.text, "ru")),
-                         parse_mode="Markdown")
-        bot.send_message(message.from_user.id, "Что-нибудь ещё?",
-                         parse_mode="Markdown")
-        bot.register_next_step_handler(message, wiki_menu)
-    elif message.text == "🔸 Нет, это всё":
-        start(message)
 
 
 def weather_menu(message):
@@ -138,6 +138,58 @@ def weather_menu(message):
         print("Wild Type Error occured! It uses \033[93m", e)
         print('\033[0m')
         pass
+
+
+def wiki_menu(message):
+    if message.text != "🔸 Нет, это всё":
+        bot.send_message(message.from_user.id, "Вот что я нашла:\n\n{}".format(wiki_search(message.text, "ru")),
+                         parse_mode="Markdown")
+        bot.send_message(message.from_user.id, "Что-нибудь ещё?",
+                         parse_mode="Markdown")
+        bot.register_next_step_handler(message, wiki_menu)
+    elif message.text == "🔸 Нет, это всё":
+        start(message)
+
+
+def translate_menu_first(message):
+
+    if message.text == "🔸 Отмена":
+        start(message)
+
+    else:
+        keyboard = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        englishButton = telebot.types.KeyboardButton(text="🇬🇧 English")
+        deutschButton = telebot.types.KeyboardButton(text="🇩🇪 German")
+        ukrainianButton = telebot.types.KeyboardButton(text="🇺🇦 Ukrainian")
+        russianButton = telebot.types.KeyboardButton(text="🇷🇺 Russian")
+        returnButton = telebot.types.KeyboardButton(text="🔸 Отмена")
+        keyboard.add(englishButton, deutschButton, ukrainianButton, russianButton, returnButton)
+
+        fortranslate = message.text
+
+        bot.send_message(message.from_user.id, "На какой язык мне перевести?",
+                         parse_mode="Markdown",
+                         reply_markup=keyboard)
+
+        bot.register_next_step_handler(message, translate_menu_second, fortranslate)
+
+
+def translate_menu_second(message, fortranslate):
+
+    if message.text == "🔸 Отмена":
+        start(message)
+
+    else:
+        keyboard = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        returnButton = telebot.types.KeyboardButton(text="🔸 Отмена")
+        keyboard.add(returnButton)
+
+        bot.send_message(message.from_user.id, translator.translate(fortranslate, dest=message.text[3:]).text,
+                         parse_mode="Markdown")
+        bot.send_message(message.from_user.id, "Что-нибудь ещё перевести?",
+                         parse_mode="Markdown",
+                         reply_markup=keyboard)
+        bot.register_next_step_handler(message, translate_menu_first)
 
 
 @bot.message_handler(commands=['start'])

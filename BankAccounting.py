@@ -49,8 +49,3 @@ def mono_get_extract():
     except Exception as e:
         print("Exception (find):", e)
         pass
-
-
-# print(mono_get_client_info())
-# mono_get_extract()
-# mono_get_webhook()

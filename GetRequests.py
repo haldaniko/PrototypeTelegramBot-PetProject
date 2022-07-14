@@ -41,3 +41,14 @@ def get_random_quote(language):
     except Exception as e:
         print("Exception:", e)
         pass
+
+
+def get_news_ukraine():
+    try:
+        res = requests.get("https://newsapi.org/v2/top-headlines?country=ua&apiKey=0ecaf71321e54e8d95c90abd69fcbafb")
+        data = res.json()
+        return data
+    except Exception as e:
+        print("Exception:", e)
+        pass
+

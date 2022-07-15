@@ -8,13 +8,12 @@ from SearchWikipedia import *
 from googletrans import Translator
 from multiprocessing import Process
 
-
 bot = telebot.TeleBot(config.botToken)
 translator = Translator()
 
 
 def morning_news():
-    bot.send_message(5157350956, "С добрым утром!")
+    bot.send_message(5157350956, "Доброго ранку!")
 
 
 def menu(message):
@@ -22,9 +21,12 @@ def menu(message):
         if message.text == "💰 Фінанси":
 
             keyboard = telebot.types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+
             exchangeButton = telebot.types.KeyboardButton(text="💱 Курс валют")
+            converterButton = telebot.types.KeyboardButton(text="💱 Конвертер валют")
             returnButton = telebot.types.KeyboardButton(text="🔸 Назад")
-            keyboard.add(exchangeButton, returnButton)
+
+            keyboard.add(exchangeButton, converterButton, returnButton)
 
             bot.send_message(message.chat.id,
                              text="💸 Фінансовий куточок\n\n{}".format(mono_get_client_info()),
@@ -66,16 +68,85 @@ def menu(message):
 
 def finance_menu(message):
     try:
+
         if message.text == "💱 Курс валют":
+
             bot.send_message(message.from_user.id, '`Курс валют на сьогодні:\n\n{}`'.format(nbu_get_rate_info()),
                              parse_mode="Markdown")
+
             bot.register_next_step_handler(message, finance_menu)
+
+        elif message.text == "💱 Конвертер валют":
+
+            keyboard = telebot.types.ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
+
+            usdButton = telebot.types.KeyboardButton(text="🇺🇸 Долар")
+            eurButton = telebot.types.KeyboardButton(text="🇪🇺 Євро")
+            uahButton = telebot.types.KeyboardButton(text="🇺🇦 Гривню")
+            plnButton = telebot.types.KeyboardButton(text="🇵🇱 Злотий")
+            returnButton = telebot.types.KeyboardButton(text="🔸 Назад")
+
+            keyboard.add(usdButton, eurButton, uahButton, plnButton, returnButton)
+
+            bot.send_message(message.from_user.id, 'Що хочеш продати?',
+                             parse_mode="Markdown",
+                             reply_markup=keyboard)
+
+            bot.register_next_step_handler(message, converter_menu_first)
+
         elif message.text == "🔸 Назад":
             start(message)
+
     except TypeError as e:
         print("Wild Type Error occured! It uses \033[93m", e)
         print('\033[0m')
         pass
+
+
+def converter_menu_first(message):
+    currencies = {"🇺🇸 Долар": "USD", "🇪🇺 Євро": "EUR", "🇺🇦 Гривню": "UAH", "🇵🇱 Злотий": "PLN"}
+
+    if message.text in currencies.keys():
+
+        bot.send_message(message.from_user.id, 'Що хочеш купити?',
+                         parse_mode="Markdown")
+
+        curForConvert = currencies[message.text]  # тут валюта, яку хочу обміняти
+
+        bot.register_next_step_handler(message, converter_menu_second, curForConvert)
+
+    elif message.text == "🔸 Назад":
+        start(message)
+
+
+def converter_menu_second(message, curForConvert):
+    currencies = {"🇺🇸 Долар": "USD", "🇪🇺 Євро": "EUR", "🇺🇦 Гривню": "UAH", "🇵🇱 Злотий": "PLN"}
+
+    if message.text in currencies.keys():
+
+        keyboard = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        returnButton = telebot.types.KeyboardButton(text="🔸 Назад")
+        keyboard.add(returnButton)
+
+        bot.send_message(message.from_user.id, 'Скільки?',
+                         parse_mode="Markdown")
+
+        curToConvert = currencies[message.text]  # тут валюта, яку хочу отримати
+
+        bot.register_next_step_handler(message, converter_menu_third, curToConvert, curForConvert)
+
+    elif message.text == "🔸 Назад":
+        start(message)
+
+
+def converter_menu_third(message, curToConvert, curFromConvert):
+    print(curToConvert, curFromConvert, message.text)
+    bot.send_message(message.from_user.id, "{} {} дорівнює {} {}".format(1, 2, 3,
+                                                                         apilayer_currency_converter(curToConvert, curFromConvert, message.text)),
+                     parse_mode="Markdown")
+
+    if message.text == "🔸 Назад":
+        start(message)
 
 
 def tools_menu(message):
@@ -117,8 +188,10 @@ def tools_menu(message):
                              reply_markup=keyboard)
 
             bot.register_next_step_handler(message, translate_menu_first)
+
         elif message.text == "🔸 Назад":
             start(message)
+
     except TypeError as e:
         print("Wild Type Error occured! It uses \033[93m", e)
         print('\033[0m')
@@ -162,7 +235,6 @@ def wiki_menu(message):
 
 
 def translate_menu_first(message):
-
     if message.text == "🔸 Назад":
         start(message)
 
@@ -175,17 +247,16 @@ def translate_menu_first(message):
         returnButton = telebot.types.KeyboardButton(text="🔸 Отмена")
         keyboard.add(englishButton, deutschButton, ukrainianButton, russianButton, returnButton)
 
-        fortranslate = message.text
+        msgfortranslate = message.text
 
         bot.send_message(message.from_user.id, "Якою мовою мені перекласти?",
                          parse_mode="Markdown",
                          reply_markup=keyboard)
 
-        bot.register_next_step_handler(message, translate_menu_second, fortranslate)
+        bot.register_next_step_handler(message, translate_menu_second, msgfortranslate)
 
 
-def translate_menu_second(message, fortranslate):
-
+def translate_menu_second(message, msgfortranslate):
     if message.text == "🔸 Назад":
         start(message)
 
@@ -194,7 +265,7 @@ def translate_menu_second(message, fortranslate):
         returnButton = telebot.types.KeyboardButton(text="🔸 Назад")
         keyboard.add(returnButton)
 
-        bot.send_message(message.from_user.id, translator.translate(fortranslate, dest=message.text[3:]).text,
+        bot.send_message(message.from_user.id, translator.translate(msgfortranslate, dest=message.text[3:]).text,
                          parse_mode="Markdown")
         bot.send_message(message.from_user.id, "Що-небудь ще перекласти?",
                          parse_mode="Markdown",
@@ -229,7 +300,6 @@ def timer():
 
 
 schedule.every().day.at("08:00").do(morning_news)
-
 
 if __name__ == '__main__':
     p1 = Process(target=assistant)

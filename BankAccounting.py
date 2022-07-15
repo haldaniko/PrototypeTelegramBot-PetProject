@@ -20,6 +20,18 @@ def nbu_get_rate_info():
         pass
 
 
+def apilayer_currency_converter(cur_to, cur_from, amount):
+    try:
+        res = requests.get("https://api.apilayer.com/currency_data/convert",
+                           params={"to": cur_to, "from": cur_from, "amount": amount},
+                           headers={"apikey": "knlzYGqMiwjZCU7nFiC4p4h5QjYULFfX"})
+        data = res.json()
+        return data["result"]
+    except Exception as e:
+        print("Exception (find):", e)
+        pass
+
+
 def mono_get_client_info():
     try:
         res = requests.get("https://api.monobank.ua/personal/client-info", headers={'X-Token': config.monobankToken})
@@ -49,3 +61,6 @@ def mono_get_extract():
     except Exception as e:
         print("Exception (find):", e)
         pass
+
+
+# print(apilayer_currency_converter("UAH", "USD", 50))
